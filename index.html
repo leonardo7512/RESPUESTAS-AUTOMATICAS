@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Respuestas AROMAKER</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .resultado {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .resultado h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .mensaje {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre-wrap;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-copiar {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn-copiar:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #0c5ba3;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .copiado {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="copiado" id="copiado">✓ Mensaje copiado al portapapeles</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Generador de Respuestas</h1>
+            <p>AROMAKER - Gestión de Pedidos</p>
+        </div>
+
+        <div class="content">
+            <div class="info-box">
+                <strong>📋 Política de entregas según horario de pago:</strong>
+                <strong>Pago antes de 17:00 hrs:</strong><br>
+                • Pedido ingresa el mismo día<br>
+                • Retiro: disponible al día siguiente<br>
+                • Envío: se despacha al día siguiente o subsiguiente<br><br>
+                <strong>Pago después de 17:00 hrs:</strong><br>
+                • Pedido ingresa al día siguiente<br>
+                • Retiro: disponible en 2 días<br>
+                • Envío: se despacha en 2-3 días
+            </div>
+
+            <form id="formulario">
+                <div class="form-group">
+                    <label for="notaVenta">📄 Nota de Venta:</label>
+                    <input type="text" id="notaVenta" placeholder="Ej: NV-2024-001234" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fechaPago">🕐 Fecha y Hora del Pago:</label>
+                    <input type="datetime-local" id="fechaPago" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipoEntrega">🚚 Tipo de Entrega:</label>
+                    <select id="tipoEntrega" required>
+                        <option value="">Seleccione una opción</option>
+                        <option value="retiro">Retiro en tienda</option>
+                        <option value="envio">Envío por courier</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">✨ Generar Respuesta</button>
+            </form>
+
+            <div class="resultado" id="resultado">
+                <h3>📨 Mensaje Generado:</h3>
+                <div class="mensaje" id="mensaje"></div>
+                <button class="btn-copiar" onclick="copiarMensaje()">📋 Copiar Mensaje</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cargar fecha automáticamente al abrir la página
+        window.onload = function() {
+            const ahora = new Date();
+            const año = ahora.getFullYear();
+            const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+            const dia = String(ahora.getDate()).padStart(2, '0');
+            const horas = String(ahora.getHours()).padStart(2, '0');
+            const minutos = String(ahora.getMinutes()).padStart(2, '0');
+            
+            document.getElementById('fechaPago').value = año + '-' + mes + '-' + dia + 'T' + horas + ':' + minutos;
+        };
+
+        document.getElementById('formulario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generarRespuesta();
+        });
+
+        function generarRespuesta() {
+            const notaVenta = document.getElementById('notaVenta').value.trim();
+            const fechaPago = new Date(document.getElementById('fechaPago').value);
+            const tipoEntrega = document.getElementById('tipoEntrega').value;
+
+            if (!notaVenta || !tipoEntrega || !document.getElementById('fechaPago').value) {
+                alert('Por favor complete todos los campos');
+                return;
+            }
+
+            // Determinar si el pago fue antes o después de las 17:00
+            const horaPago = fechaPago.getHours();
+            const pagoAntesDe17 = horaPago < 17;
+
+            // Calcular fechas según horario de pago
+            let fechaIngreso, fechaDisponible, fechaEnvioMin, fechaEnvioMax;
+            
+            if (pagoAntesDe17) {
+                // Pago antes de 17:00 - entra el mismo día
+                fechaIngreso = new Date(fechaPago);
+                fechaDisponible = new Date(fechaPago);
+                fechaDisponible.setDate(fechaDisponible.getDate() + 1);
+                
+                // Envío: sale mañana o pasado mañana
+                fechaEnvioMin = new Date(fechaPago);
+                fechaEnvioMin.setDate(fechaEnvioMin.getDate() + 1);
+                fechaEnvioMax = new Date(fechaPago);
+                fechaEnvioMax.setDate(fechaEnvioMax.getDate() + 2);
+            } else {
+                // Pago después de 17:00 - entra al día siguiente
+                fechaIngreso = new Date(fechaPago);
+                fechaIngreso.setDate(fechaIngreso.getDate() + 1);
+                fechaDisponible = new Date(fechaPago);
+                fechaDisponible.setDate(fechaDisponible.getDate() + 2);
+                
+                // Envío: sale en 2 o 3 días
+                fechaEnvioMin = new Date(fechaPago);
+                fechaEnvioMin.setDate(fechaEnvioMin.getDate() + 2);
+                fechaEnvioMax = new Date(fechaPago);
+                fechaEnvioMax.setDate(fechaEnvioMax.getDate() + 3);
+            }
+
+            // Generar mensaje
+            let mensaje = 'Estimado/a cliente,\n\n';
+            mensaje += 'Confirmamos la recepción de su pago para la nota de venta ' + notaVenta + '.\n\n';
+            
+            if (pagoAntesDe17) {
+                mensaje += '✅ Su pago fue registrado hoy ' + formatearFecha(fechaPago) + ' antes de las 17:00 hrs, por lo que su pedido ingresa hoy mismo.\n\n';
+            } else {
+                mensaje += '✅ Su pago fue registrado el ' + formatearFecha(fechaPago) + ' después de las 17:00 hrs, por lo que su pedido ingresará mañana ' + formatearFecha(fechaIngreso) + '.\n\n';
+            }
+
+            if (tipoEntrega === 'retiro') {
+                mensaje += '📦 RETIRO EN TIENDA:\n';
+                mensaje += 'Su pedido estará disponible para retiro ' + formatearFechaCompleta(fechaDisponible) + '.\n\n';
+                mensaje += '📍 Dirección: [DIRECCIÓN DE AROMAKER]\n';
+                mensaje += '🕐 Horario de atención: [HORARIO]\n\n';
+                mensaje += '*Si necesita retirarlo antes, por favor consúltenos para verificar si hay disponibilidad.\n\n';
+            } else {
+                mensaje += '🚚 ENVÍO POR COURIER:\n';
+                if (pagoAntesDe17) {
+                    mensaje += 'Su pedido será enviado mañana ' + formatearFecha(fechaEnvioMin) + ' o ' + formatearFecha(fechaEnvioMax) + '.\n';
+                } else {
+                    mensaje += 'Su pedido será enviado el ' + formatearFecha(fechaEnvioMin) + ' o ' + formatearFecha(fechaEnvioMax) + '.\n';
+                }
+                mensaje += 'Puede ser despachado a domicilio o a la oficina del courier que prefiera.\n';
+                mensaje += 'Recibirá notificación con el número de seguimiento una vez que sea despachado.\n\n';
+            }
+
+            mensaje += 'Si tiene alguna consulta, no dude en contactarnos.\n\n';
+            mensaje += 'Saludos cordiales,\n';
+            mensaje += 'Equipo AROMAKER';
+
+            // Mostrar resultado
+            document.getElementById('mensaje').textContent = mensaje;
+            document.getElementById('resultado').style.display = 'block';
+            document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function formatearFecha(fecha) {
+            const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            return fecha.toLocaleDateString('es-CL', opciones);
+        }
+
+        function formatearFechaCompleta(fecha) {
+            const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+            const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            
+            const diaSemana = dias[fecha.getDay()];
+            const dia = fecha.getDate();
+            const mes = meses[fecha.getMonth()];
+            const año = fecha.getFullYear();
+
+            return diaSemana + ' ' + dia + ' de ' + mes + ' de ' + año;
+        }
+
+        function copiarMensaje() {
+            const mensaje = document.getElementById('mensaje').textContent;
+            navigator.clipboard.writeText(mensaje).then(function() {
+                mostrarNotificacion();
+            }).catch(function(err) {
+                alert('Error al copiar el mensaje');
+            });
+        }
+
+        function mostrarNotificacion() {
+            const notificacion = document.getElementById('copiado');
+            notificacion.style.display = 'block';
+            setTimeout(function() {
+                notificacion.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
