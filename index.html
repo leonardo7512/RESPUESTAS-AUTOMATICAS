@@ -233,11 +233,17 @@
 
                 <div class="form-group">
                     <label for="tipoEntrega">🚚 Tipo de Entrega:</label>
-                    <select id="tipoEntrega" required>
+                    <select id="tipoEntrega" required onchange="mostrarHorarioRetiro()">
                         <option value="">Seleccione una opción</option>
                         <option value="retiro">Retiro en tienda</option>
                         <option value="envio">Envío por courier</option>
                     </select>
+                </div>
+
+                <div class="form-group" id="horarioRetiroContainer" style="display: none;">
+                    <label for="horarioRetiro">🕐 Horario de Retiro Especial HOY (Opcional):</label>
+                    <input type="text" id="horarioRetiro" placeholder="Ej: de 10:00 a 14:00 hrs, a las 15:00 hrs, etc.">
+                    <small style="color: #666; display: block; margin-top: 5px;">Si acuerdas con el cliente un retiro HOY en horario especial, ingrésalo aquí. Si lo dejas vacío, se aplicará el retiro normal para mañana.</small>
                 </div>
 
                 <button type="submit" class="btn">✨ Generar Respuesta</button>
@@ -264,6 +270,17 @@
             document.getElementById('fechaPago').value = año + '-' + mes + '-' + dia + 'T' + horas + ':' + minutos;
         };
 
+        function mostrarHorarioRetiro() {
+            const tipoEntrega = document.getElementById('tipoEntrega').value;
+            const container = document.getElementById('horarioRetiroContainer');
+            if (tipoEntrega === 'retiro') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+                document.getElementById('horarioRetiro').value = '';
+            }
+        }
+
         document.getElementById('formulario').addEventListener('submit', function(e) {
             e.preventDefault();
             generarRespuesta();
@@ -273,9 +290,10 @@
             const notaVenta = document.getElementById('notaVenta').value.trim();
             const fechaPago = new Date(document.getElementById('fechaPago').value);
             const tipoEntrega = document.getElementById('tipoEntrega').value;
+            const horarioRetiro = document.getElementById('horarioRetiro').value.trim();
 
             if (!notaVenta || !tipoEntrega || !document.getElementById('fechaPago').value) {
-                alert('Por favor complete todos los campos');
+                alert('Por favor complete todos los campos obligatorios');
                 return;
             }
 
@@ -323,10 +341,21 @@
 
             if (tipoEntrega === 'retiro') {
                 mensaje += '📦 RETIRO EN TIENDA:\n';
-                mensaje += 'Su pedido estará disponible para retiro ' + formatearFechaCompleta(fechaDisponible) + '.\n\n';
-                mensaje += '📍 Dirección: [DIRECCIÓN DE AROMAKER]\n';
-                mensaje += '🕐 Horario de atención: [HORARIO]\n\n';
-                mensaje += '*Si necesita retirarlo antes, por favor consúltenos para verificar si hay disponibilidad.\n\n';
+                
+                if (horarioRetiro) {
+                    // Si hay horario acordado, significa que el retiro es HOY en ese horario
+                    mensaje += 'Su pedido estará disponible para retiro HOY ' + formatearFecha(fechaPago) + '\n\n';
+                    mensaje += '📍 Dirección: Av. Lo Espejo 02360, Bodega G08, San Bernardo, Santiago de Chile\n';
+                    mensaje += '🕐 Horario de retiro acordado: ' + horarioRetiro + '\n\n';
+                    mensaje += '⚠️ *IMPORTANTE: Debe indicar en bodega el número de nota de venta:* *' + notaVenta + '*\n\n';
+                } else {
+                    // Si no hay horario acordado, aplica la regla normal (retiro al día siguiente)
+                    mensaje += 'Su pedido estará disponible para retiro ' + formatearFechaCompleta(fechaDisponible) + '.\n\n';
+                    mensaje += '📍 Dirección: Av. Lo Espejo 02360, Bodega G08, San Bernardo, Santiago de Chile\n';
+                    mensaje += '🕐 Horario de atención: Lunes a Viernes de 9:00 a 18:00 hrs\n\n';
+                    mensaje += '⚠️ *IMPORTANTE: Debe indicar en bodega el número de nota de venta:* *' + notaVenta + '*\n\n';
+                    mensaje += '*Si necesita retirarlo en un horario especial, por favor consúltenos para verificar disponibilidad.\n\n';
+                }
             } else {
                 mensaje += '🚚 ENVÍO POR COURIER:\n';
                 if (pagoAntesDe17) {
