@@ -313,12 +313,12 @@
 
             // Generar mensaje
             let mensaje = 'Estimado/a cliente,\n\n';
-            mensaje += 'Confirmamos la recepción de su pago para la nota de venta ' + notaVenta + '.\n\n';
+            mensaje += 'Hemos recibido su comprobante de pago correspondiente a la nota de venta ' + notaVenta + '.\n\n';
             
             if (pagoAntesDe17) {
-                mensaje += '✅ Su pago fue registrado hoy ' + formatearFecha(fechaPago) + ' antes de las 17:00 hrs, por lo que su pedido ingresa hoy mismo.\n\n';
+                mensaje += '✅ Su comprobante fue recibido hoy ' + formatearFecha(fechaPago) + ' antes de las 17:00 hrs, por lo que su pedido ingresa hoy mismo.\n\n';
             } else {
-                mensaje += '✅ Su pago fue registrado el ' + formatearFecha(fechaPago) + ' después de las 17:00 hrs, por lo que su pedido ingresará mañana ' + formatearFecha(fechaIngreso) + '.\n\n';
+                mensaje += '✅ Su comprobante fue recibido el ' + formatearFecha(fechaPago) + ' después de las 17:00 hrs, por lo que su pedido ingresará mañana ' + formatearFecha(fechaIngreso) + '.\n\n';
             }
 
             if (tipoEntrega === 'retiro') {
