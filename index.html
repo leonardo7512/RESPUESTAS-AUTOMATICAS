@@ -297,9 +297,18 @@
                 return;
             }
 
+            // Obtener fecha/hora actual
+            const ahora = new Date();
+            
             // Determinar si el pago fue antes o después de las 17:00
             const horaPago = fechaPago.getHours();
             const pagoAntesDe17 = horaPago < 17;
+
+            // Verificar si la fecha de pago es HOY, PASADO o FUTURO
+            const fechaPagoSoloFecha = new Date(fechaPago.getFullYear(), fechaPago.getMonth(), fechaPago.getDate());
+            const ahoraSoloFecha = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+            const esHoy = fechaPagoSoloFecha.getTime() === ahoraSoloFecha.getTime();
+            const esPasado = fechaPagoSoloFecha < ahoraSoloFecha;
 
             // Calcular fechas según horario de pago
             let fechaIngreso, fechaDisponible, fechaEnvioMin, fechaEnvioMax;
@@ -333,18 +342,38 @@
             let mensaje = 'Estimado/a cliente,\n\n';
             mensaje += 'Hemos recibido su comprobante de pago correspondiente a la nota de venta ' + notaVenta + '.\n\n';
             
-            if (pagoAntesDe17) {
-                mensaje += '✅ Su comprobante fue recibido hoy ' + formatearFecha(fechaPago) + ' antes de las 17:00 hrs, por lo que su pedido ingresa hoy mismo.\n\n';
+            // Mensaje según si es hoy, pasado o futuro
+            if (esHoy) {
+                if (pagoAntesDe17) {
+                    mensaje += '✅ Su comprobante fue recibido hoy ' + formatearFecha(fechaPago) + ' antes de las 17:00 hrs, por lo que su pedido ingresa hoy mismo.\n\n';
+                } else {
+                    mensaje += '✅ Su comprobante fue recibido hoy ' + formatearFecha(fechaPago) + ' después de las 17:00 hrs, por lo que su pedido ingresará mañana ' + formatearFecha(fechaIngreso) + '.\n\n';
+                }
+            } else if (esPasado) {
+                if (pagoAntesDe17) {
+                    mensaje += '✅ Su comprobante fue recibido el ' + formatearFecha(fechaPago) + ' antes de las 17:00 hrs, por lo que su pedido ingresó ese mismo día.\n\n';
+                } else {
+                    mensaje += '✅ Su comprobante fue recibido el ' + formatearFecha(fechaPago) + ' después de las 17:00 hrs, por lo que su pedido ingresó el ' + formatearFecha(fechaIngreso) + '.\n\n';
+                }
             } else {
-                mensaje += '✅ Su comprobante fue recibido el ' + formatearFecha(fechaPago) + ' después de las 17:00 hrs, por lo que su pedido ingresará mañana ' + formatearFecha(fechaIngreso) + '.\n\n';
+                // Fecha futura
+                if (pagoAntesDe17) {
+                    mensaje += '✅ Su comprobante será recibido el ' + formatearFecha(fechaPago) + ' antes de las 17:00 hrs, por lo que su pedido ingresará ese mismo día.\n\n';
+                } else {
+                    mensaje += '✅ Su comprobante será recibido el ' + formatearFecha(fechaPago) + ' después de las 17:00 hrs, por lo que su pedido ingresará el ' + formatearFecha(fechaIngreso) + '.\n\n';
+                }
             }
 
             if (tipoEntrega === 'retiro') {
                 mensaje += '📦 RETIRO EN TIENDA:\n';
                 
                 if (horarioRetiro) {
-                    // Si hay horario acordado, significa que el retiro es HOY en ese horario
-                    mensaje += 'Su pedido estará disponible para retiro HOY ' + formatearFecha(fechaPago) + '\n\n';
+                    // Si hay horario acordado, significa que el retiro es en la fecha del pago en ese horario
+                    if (esHoy) {
+                        mensaje += 'Su pedido estará disponible para retiro HOY ' + formatearFecha(fechaPago) + '\n\n';
+                    } else {
+                        mensaje += 'Su pedido estará disponible para retiro el ' + formatearFecha(fechaPago) + '\n\n';
+                    }
                     mensaje += '📍 Dirección: Av. Lo Espejo 02360, Bodega G08, San Bernardo, Santiago de Chile\n';
                     mensaje += '🕐 Horario de retiro acordado: ' + horarioRetiro + '\n\n';
                     mensaje += '⚠️ *IMPORTANTE: Debe indicar en bodega el número de nota de venta:* *' + notaVenta + '*\n\n';
@@ -352,17 +381,22 @@
                     // Si no hay horario acordado, aplica la regla normal (retiro al día siguiente)
                     mensaje += 'Su pedido estará disponible para retiro ' + formatearFechaCompleta(fechaDisponible) + '.\n\n';
                     mensaje += '📍 Dirección: Av. Lo Espejo 02360, Bodega G08, San Bernardo, Santiago de Chile\n';
-                    mensaje += '🕐 Horario de atención: Lunes a Viernes de 9:00 a 18:00 hrs\n\n';
+                    mensaje += '🕐 Horario de retiro: de 10:00 a 12:30 hrs o de 14:45 a 16:30 hrs\n\n';
                     mensaje += '⚠️ *IMPORTANTE: Debe indicar en bodega el número de nota de venta:* *' + notaVenta + '*\n\n';
                     mensaje += '*Si necesita retirarlo en un horario especial, por favor consúltenos para verificar disponibilidad.\n\n';
                 }
             } else {
                 mensaje += '🚚 ENVÍO POR COURIER:\n';
-                if (pagoAntesDe17) {
+                
+                // Ajustar mensaje según si es hoy, pasado o futuro
+                if (esHoy && pagoAntesDe17) {
                     mensaje += 'Su pedido será enviado mañana ' + formatearFecha(fechaEnvioMin) + ' o ' + formatearFecha(fechaEnvioMax) + '.\n';
+                } else if (esHoy && !pagoAntesDe17) {
+                    mensaje += 'Su pedido será enviado el ' + formatearFecha(fechaEnvioMin) + ' o ' + formatearFecha(fechaEnvioMax) + '.\n';
                 } else {
                     mensaje += 'Su pedido será enviado el ' + formatearFecha(fechaEnvioMin) + ' o ' + formatearFecha(fechaEnvioMax) + '.\n';
                 }
+                
                 mensaje += 'Puede ser despachado a domicilio o a la oficina del courier que prefiera.\n';
                 mensaje += 'Recibirá notificación con el número de seguimiento una vez que sea despachado.\n\n';
             }
