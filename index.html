@@ -209,15 +209,16 @@
 
         <div class="content">
             <div class="info-box">
-                <strong>📋 Política de entregas según horario de pago:</strong>
+                <strong>📋 Política de entregas según horario de pago (días hábiles):</strong>
                 <strong>Pago antes de 17:00 hrs:</strong><br>
                 • Pedido ingresa el mismo día<br>
-                • Retiro: disponible al día siguiente<br>
-                • Envío: se despacha al día siguiente o subsiguiente<br><br>
+                • Retiro: disponible al siguiente día hábil<br>
+                • Envío: se despacha en 1-2 días hábiles<br><br>
                 <strong>Pago después de 17:00 hrs:</strong><br>
-                • Pedido ingresa al día siguiente<br>
-                • Retiro: disponible en 2 días<br>
-                • Envío: se despacha en 2-3 días
+                • Pedido ingresa al siguiente día hábil<br>
+                • Retiro: disponible en 2 días hábiles<br>
+                • Envío: se despacha en 2-3 días hábiles<br><br>
+                <small>* Los días hábiles no incluyen sábados ni domingos</small>
             </div>
 
             <form id="formulario">
@@ -286,6 +287,22 @@
             generarRespuesta();
         });
 
+        function sumarDiasHabiles(fecha, dias) {
+            let resultado = new Date(fecha);
+            let diasAgregados = 0;
+
+            while (diasAgregados < dias) {
+                resultado.setDate(resultado.getDate() + 1);
+                const diaSemana = resultado.getDay();
+                // Si no es sábado (6) ni domingo (0)
+                if (diaSemana !== 0 && diaSemana !== 6) {
+                    diasAgregados++;
+                }
+            }
+
+            return resultado;
+        }
+
         function generarRespuesta() {
             const notaVenta = document.getElementById('notaVenta').value.trim();
             const fechaPago = new Date(document.getElementById('fechaPago').value);
@@ -310,32 +327,27 @@
             const esHoy = fechaPagoSoloFecha.getTime() === ahoraSoloFecha.getTime();
             const esPasado = fechaPagoSoloFecha < ahoraSoloFecha;
 
-            // Calcular fechas según horario de pago
+            // Calcular fechas según horario de pago (SOLO DÍAS HÁBILES)
             let fechaIngreso, fechaDisponible, fechaEnvioMin, fechaEnvioMax;
             
             if (pagoAntesDe17) {
                 // Pago antes de 17:00 - entra el mismo día
                 fechaIngreso = new Date(fechaPago);
-                fechaDisponible = new Date(fechaPago);
-                fechaDisponible.setDate(fechaDisponible.getDate() + 1);
+                // Retiro: 1 día hábil después
+                fechaDisponible = sumarDiasHabiles(fechaPago, 1);
                 
-                // Envío: sale mañana o pasado mañana
-                fechaEnvioMin = new Date(fechaPago);
-                fechaEnvioMin.setDate(fechaEnvioMin.getDate() + 1);
-                fechaEnvioMax = new Date(fechaPago);
-                fechaEnvioMax.setDate(fechaEnvioMax.getDate() + 2);
+                // Envío: 1-2 días hábiles después
+                fechaEnvioMin = sumarDiasHabiles(fechaPago, 1);
+                fechaEnvioMax = sumarDiasHabiles(fechaPago, 2);
             } else {
-                // Pago después de 17:00 - entra al día siguiente
-                fechaIngreso = new Date(fechaPago);
-                fechaIngreso.setDate(fechaIngreso.getDate() + 1);
-                fechaDisponible = new Date(fechaPago);
-                fechaDisponible.setDate(fechaDisponible.getDate() + 2);
+                // Pago después de 17:00 - entra al día siguiente hábil
+                fechaIngreso = sumarDiasHabiles(fechaPago, 1);
+                // Retiro: 2 días hábiles después
+                fechaDisponible = sumarDiasHabiles(fechaPago, 2);
                 
-                // Envío: sale en 2 o 3 días
-                fechaEnvioMin = new Date(fechaPago);
-                fechaEnvioMin.setDate(fechaEnvioMin.getDate() + 2);
-                fechaEnvioMax = new Date(fechaPago);
-                fechaEnvioMax.setDate(fechaEnvioMax.getDate() + 3);
+                // Envío: 2-3 días hábiles después
+                fechaEnvioMin = sumarDiasHabiles(fechaPago, 2);
+                fechaEnvioMax = sumarDiasHabiles(fechaPago, 3);
             }
 
             // Generar mensaje
